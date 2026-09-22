@@ -130,31 +130,42 @@ public class FormularioCliente extends Formulario {
             JOptionPane.showMessageDialog(this, "Error al modificar: " + e.getMessage());
         }
     }
-
-    @Override
-    public void eliminar() {
-        if (txtId.getText().isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Selecciona un cliente de la tabla primero.");
-            return;
-        }
-
-        int confirmar = JOptionPane.showConfirmDialog(this, "¿Seguro que quieres eliminar este cliente?");
-        if (confirmar != JOptionPane.YES_OPTION) return;
-
-        String sql = "DELETE FROM Clientes WHERE id_cliente=?";
-        try (Connection con = Conexion.getConexion();
-             PreparedStatement ps = con.prepareStatement(sql)) {
-
-            ps.setInt(1, Integer.parseInt(txtId.getText()));
-            ps.executeUpdate();
-            JOptionPane.showMessageDialog(this, "Cliente eliminado correctamente.");
-            limpiarCampos();
-            consultar();
-
-        } catch (SQLException e) {
-            JOptionPane.showMessageDialog(this, "Error al eliminar: " + e.getMessage());
+    private int contarOrdenesDelCliente(int idCliente) throws SQLException {
+    String sql = "SELECT COUNT(*) FROM OrdenesTrabajo WHERE id_cliente = ?";
+    try (Connection con = Conexion.getConexion();
+         PreparedStatement ps = con.prepareStatement(sql)) {
+        ps.setInt(1, idCliente);
+        try (ResultSet rs = ps.executeQuery()) {
+            rs.next();
+            return rs.getInt(1);
         }
     }
+}
+
+   @Override
+public void eliminar() {
+    if (txtId.getText().isEmpty()) {
+        JOptionPane.showMessageDialog(this, "Selecciona un cliente de la tabla primero.");
+        return;
+    }
+
+    int idCliente = Integer.parseInt(txtId.getText());
+
+    try {
+        int ordenes = contarOrdenesDelCliente(idCliente);
+        if (ordenes > 0) {
+            JOptionPane.showMessageDialog(this,
+                "No puedes eliminar este cliente: tiene " + ordenes + " orden(es) de trabajo asociada(s).");
+            return;
+        }
+    } catch (SQLException e) {
+        JOptionPane.showMessageDialog(this, "Error al verificar órdenes: " + e.getMessage());
+        return;
+    }
+
+    int confirmar = JOptionPane.showConfirmDialog(this, "¿Seguro que quieres eliminar este cliente?");
+    if (confirmar != JOptionPane.YES_OPTION) return;
+
 
     private void cargarSeleccion() {
         int fila = tabla.getSelectedRow();
