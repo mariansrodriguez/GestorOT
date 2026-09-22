@@ -130,6 +130,17 @@ public class FormularioTecnico extends Formulario {
             JOptionPane.showMessageDialog(this, "Error al modificar: " + e.getMessage());
         }
     }
+    private int contarOrdenesDelTecnico(int idTecnico) throws SQLException {
+    String sql = "SELECT COUNT(*) FROM OrdenesTrabajo WHERE id_tecnico = ?";
+    try (Connection con = Conexion.getConexion();
+         PreparedStatement ps = con.prepareStatement(sql)) {
+        ps.setInt(1, idTecnico);
+        try (ResultSet rs = ps.executeQuery()) {
+            rs.next();
+            return rs.getInt(1);
+        }
+    }
+}
 
     @Override
     public void eliminar() {
@@ -137,6 +148,18 @@ public class FormularioTecnico extends Formulario {
             JOptionPane.showMessageDialog(this, "Selecciona un técnico de la tabla primero.");
             return;
         }
+        int idTecnico = Integer.parseInt(txtId.getText());
+        try {
+        int ordenes = contarOrdenesDelTecnico(idTecnico);
+        if (ordenes > 0) {
+            JOptionPane.showMessageDialog(this,
+                "No puedes eliminar este técnico: tiene " + ordenes + " orden(es) de trabajo asociada(s).");
+            return;
+        }
+    } catch (SQLException e) {
+        JOptionPane.showMessageDialog(this, "Error al verificar órdenes: " + e.getMessage());
+        return;
+    }
 
         int confirmar = JOptionPane.showConfirmDialog(this, "¿Seguro que quieres eliminar este técnico?");
         if (confirmar != JOptionPane.YES_OPTION) return;
