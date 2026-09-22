@@ -1,3 +1,7 @@
+package com.mycompany.gestorot.vista;
+
+import com.mycompany.gestorot.vista.Formulario;
+import com.mycompany.gestorot.conexion.Conexion;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
@@ -44,6 +48,7 @@ public class FormularioTecnico extends Formulario {
 
     @Override
     public void insertar() {
+         if (!validarCampos()) return;
         String sql = "INSERT INTO Tecnicos (nombre, especialidad, telefono, correo, identificacion) VALUES (?, ?, ?, ?, ?)";
         try (Connection con = Conexion.getConexion();
              PreparedStatement ps = con.prepareStatement(sql)) {
@@ -103,6 +108,7 @@ public class FormularioTecnico extends Formulario {
             JOptionPane.showMessageDialog(this, "Selecciona un técnico de la tabla primero.");
             return;
         }
+         if (!validarCampos()) return;
 
         String sql = "UPDATE Tecnicos SET nombre=?, especialidad=?, telefono=?, correo=?, identificacion=? WHERE id_tecnicos=?";
         try (Connection con = Conexion.getConexion();
@@ -161,6 +167,22 @@ public class FormularioTecnico extends Formulario {
         txtCorreo.setText(tabla.getValueAt(fila, 4) != null ? tabla.getValueAt(fila, 4).toString() : "");
         txtIdentificacion.setText(tabla.getValueAt(fila, 5) != null ? tabla.getValueAt(fila, 5).toString() : "");
     }
+    private boolean validarCampos() {
+    if (txtNombre.getText().trim().isEmpty() ||
+        txtEspecialidad.getText().trim().isEmpty() ||
+        txtIdentificacion.getText().trim().isEmpty()) {
+        JOptionPane.showMessageDialog(this, "Nombre, especialidad e identificación son obligatorios.");
+        return false;
+    }
+
+    String correo = txtCorreo.getText().trim();
+    if (!correo.isEmpty() && !correo.matches("^[\\w.+-]+@[\\w-]+\\.[a-zA-Z]{2,}$")) {
+        JOptionPane.showMessageDialog(this, "El correo no tiene un formato válido.");
+        return false;
+    }
+
+    return true;
+}
 
     private void limpiarCampos() {
         txtId.setText("");

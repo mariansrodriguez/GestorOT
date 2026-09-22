@@ -1,3 +1,6 @@
+
+import com.mycompany.gestorot.vista.FormularioCliente;
+
 public class TestFormularioCliente {
     public static void main(String[] args) {
         FormularioCliente f = new FormularioCliente();

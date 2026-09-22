@@ -1,3 +1,6 @@
+
+import com.mycompany.gestorot.vista.FormularioOrdenTrabajo;
+
 public class TestFormularioOrdenTrabajo  {
     public static void main(String[] args) {
         FormularioOrdenTrabajo f = new FormularioOrdenTrabajo();

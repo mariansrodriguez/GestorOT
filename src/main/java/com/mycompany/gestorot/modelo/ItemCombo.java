@@ -1,3 +1,5 @@
+package com.mycompany.gestorot.modelo;
+
  
     public class ItemCombo {
     private int id;

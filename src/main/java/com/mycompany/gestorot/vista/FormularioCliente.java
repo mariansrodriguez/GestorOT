@@ -1,3 +1,5 @@
+package com.mycompany.gestorot.vista;
+import com.mycompany.gestorot.conexion.Conexion;
 import javax.swing.*;
 import java.awt.*;
 import java.sql.*;
@@ -10,12 +12,12 @@ public class FormularioCliente extends Formulario {
     
 
     public FormularioCliente() {
-        super("Gestión de Clientes"); // llama al constructor de Formulario
+        super("Gestión de Clientes"); 
 
         JPanel panelCampos = new JPanel(new GridLayout(6, 2, 5, 5));
 
         txtId = new JTextField();
-        txtId.setEditable(false); // el id lo genera SQL Server (IDENTITY), no se escribe a mano
+        txtId.setEditable(false); 
         txtNombre = new JTextField();
         txtTelefono = new JTextField();
         txtEmail = new JTextField();
@@ -39,14 +41,13 @@ public class FormularioCliente extends Formulario {
 
         tabla = new JTable();
         add(new JScrollPane(tabla), BorderLayout.CENTER);
-
-        // Cuando el usuario hace click en una fila de la tabla,
-        // los datos de esa fila se cargan en los campos de texto (para poder modificar/eliminar)
+        
         tabla.getSelectionModel().addListSelectionListener(e -> cargarSeleccion());
     }
 
     @Override
     public void insertar() {
+        if (!validarCampos()) return;
         String sql = "INSERT INTO Clientes (nombre, telefono, email, direccion, cedula_nit) VALUES (?, ?, ?, ?, ?)";
         try (Connection con = Conexion.getConexion();
              PreparedStatement ps = con.prepareStatement(sql)) {
@@ -106,6 +107,8 @@ public class FormularioCliente extends Formulario {
             JOptionPane.showMessageDialog(this, "Selecciona un cliente de la tabla primero.");
             return;
         }
+        if (!validarCampos()) return;
+
 
         String sql = "UPDATE Clientes SET nombre=?, telefono=?, email=?, direccion=?, cedula_nit=? WHERE id_cliente=?";
         try (Connection con = Conexion.getConexion();
@@ -164,6 +167,28 @@ public class FormularioCliente extends Formulario {
         txtDireccion.setText(tabla.getValueAt(fila, 4) != null ? tabla.getValueAt(fila, 4).toString() : "");
         txtCedula.setText(tabla.getValueAt(fila, 5) != null ? tabla.getValueAt(fila, 5).toString() : "");
     }
+    
+    private boolean validarCampos() {
+    if (txtNombre.getText().trim().isEmpty() ||
+        txtTelefono.getText().trim().isEmpty() ||
+        txtCedula.getText().trim().isEmpty()) {
+        JOptionPane.showMessageDialog(this, "Nombre, teléfono y cédula/NIT son obligatorios.");
+        return false;
+    }
+
+    String email = txtEmail.getText().trim();
+    if (!email.isEmpty() && !email.matches("^[\\w.+-]+@[\\w-]+\\.[a-zA-Z]{2,}$")) {
+        JOptionPane.showMessageDialog(this, "El email no tiene un formato válido.");
+        return false;
+    }
+
+    if (!txtTelefono.getText().trim().matches("\\d{7,10}")) {
+        JOptionPane.showMessageDialog(this, "El teléfono debe tener entre 7 y 10 dígitos.");
+        return false;
+    }
+
+    return true;
+}
 
     private void limpiarCampos() {
         txtId.setText("");

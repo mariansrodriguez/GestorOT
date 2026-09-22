@@ -1,3 +1,8 @@
+package com.mycompany.gestorot.vista;
+
+import com.mycompany.gestorot.vista.Formulario;
+import com.mycompany.gestorot.conexion.Conexion;
+import com.mycompany.gestorot.modelo.ItemCombo;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
@@ -77,6 +82,7 @@ public class FormularioOrdenTrabajo extends Formulario {
 
     @Override
     public void insertar() {
+        
         ItemCombo cliente = (ItemCombo) comboCliente.getSelectedItem();
         ItemCombo tecnico = (ItemCombo) comboTecnico.getSelectedItem();
 
@@ -84,6 +90,7 @@ public class FormularioOrdenTrabajo extends Formulario {
             JOptionPane.showMessageDialog(this, "Debes tener al menos un cliente y un técnico creados.");
             return;
         }
+        if (!validarCampos()) return;
 
         String sql = "INSERT INTO OrdenesTrabajo (id_cliente, id_tecnico, descripcion_servicio, fecha_entrega_estimada, estado, costo) " +
                      "VALUES (?, ?, ?, ?, ?, ?)";
@@ -164,6 +171,7 @@ public class FormularioOrdenTrabajo extends Formulario {
 
     @Override
     public void modificar() {
+        if (!validarCampos()) return;
         if (txtId.getText().isEmpty()) {
             JOptionPane.showMessageDialog(this, "Selecciona una orden de la tabla primero.");
             return;
@@ -249,6 +257,30 @@ public class FormularioOrdenTrabajo extends Formulario {
             }
         }
     }
+    private boolean validarCampos() {
+    if (comboCliente.getSelectedItem() == null || comboTecnico.getSelectedItem() == null) {
+        JOptionPane.showMessageDialog(this, "Debes seleccionar un cliente y un técnico.");
+        return false;
+    }
+
+    if (txtDescripcion.getText().trim().isEmpty()) {
+        JOptionPane.showMessageDialog(this, "La descripción del servicio es obligatoria.");
+        return false;
+    }
+
+    if (!txtFechaEntrega.getText().trim().matches("\\d{4}-\\d{2}-\\d{2}")) {
+        JOptionPane.showMessageDialog(this, "La fecha debe tener el formato AAAA-MM-DD.");
+        return false;
+    }
+
+    String costo = txtCosto.getText().trim();
+    if (!costo.isEmpty() && !costo.matches("\\d+(\\.\\d{1,2})?")) {
+        JOptionPane.showMessageDialog(this, "El costo debe ser un número válido (ej: 80000 o 80000.50).");
+        return false;
+    }
+
+    return true;
+}
 
     private void limpiarCampos() {
         txtId.setText("");
